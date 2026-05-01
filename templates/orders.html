@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+    <h2>订单列表</h2>
+    <table>
+        <tr>
+            <th>订单ID</th><th>商品名</th><th>买家</th><th>日期</th>
+        </tr>
+        {% for o in orders %}
+        <tr>
+            <td>{{o.order_id}}</td>
+            <td>{{o.item_name}}</td>
+            <td>{{o.user_name}}</td>
+            <td>{{o.order_date}}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    <p><a href="/">返回首页</a></p>
+</div>
+{% endblock %}

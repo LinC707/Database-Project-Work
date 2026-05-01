@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+    <h2>视图中心</h2>
+    <p class="muted">进入本页面时已自动执行：创建/刷新“已售视图、未售视图”。</p>
+</div>
+
+<div class="card">
+    <h3>已售商品视图（商品名 + 买家ID）</h3>
+    <table>
+        <tr><th>商品名</th><th>买家ID</th></tr>
+        {% for row in sold_data %}
+        <tr>
+            <td>{{ row.item_name }}</td>
+            <td>{{ row.buyer_id }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+
+<div class="card">
+    <h3>未售商品视图</h3>
+    <table>
+        <tr><th>商品ID</th><th>名称</th><th>分类</th><th>价格</th><th>卖家ID</th></tr>
+        {% for row in unsold_data %}
+        <tr>
+            <td>{{ row.item_id }}</td>
+            <td>{{ row.item_name }}</td>
+            <td>{{ row.category }}</td>
+            <td>{{ row.price }}</td>
+            <td>{{ row.seller_id }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    <p><a href="/">返回首页</a></p>
+</div>
+{% endblock %}

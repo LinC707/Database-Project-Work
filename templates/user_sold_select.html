@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+    <h2>按用户查询商品是否被购买</h2>
+    <form method="post" class="inline">
+        <select name="user_id">
+            <option value="">--请选择用户--</option>
+            {% for uid in users %}
+            <option value="{{uid}}" {% if selected==uid %}selected{% endif %}>{{uid}}</option>
+            {% endfor %}
+        </select>
+        <button type="submit">查询</button>
+    </form>
+
+    {% if selected %}
+    <h3>用户 {{selected}} 的商品售卖状态</h3>
+    <table>
+        <tr><th>商品ID</th><th>商品名</th><th>状态</th></tr>
+        {% for i in items %}
+        <tr>
+            <td>{{i.item_id}}</td>
+            <td>{{i.item_name}}</td>
+            <td class="{{ 'status-sold' if i.status|int == 1 else 'status-unsold' }}">{{i.is_sold}}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+
+    <p><a href="/">返回首页</a></p>
+</div>
+{% endblock %}

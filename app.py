@@ -1,19 +1,44 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
 from datetime import datetime
 import pymysql
+import os
+from urllib.parse import urlparse
 
 app = Flask(__name__)
-app.secret_key = "trading-platform-demo-secret"
+app.secret_key = os.getenv("SECRET_KEY", "trading-platform-demo-secret")
 
 # 数据库连接
 def get_db():
+    # 支持两种配置方式：
+    # 1) DATABASE_URL=mysql://user:pass@host:3306/dbname
+    # 2) DB_HOST/DB_PORT/DB_USER/DB_PASSWORD/DB_NAME
+    database_url = (
+        os.getenv("DATABASE_URL", "").strip()
+        or os.getenv("MYSQL_URL", "").strip()
+    )
+    if database_url:
+        parsed = urlparse(database_url)
+        if parsed.scheme.startswith("mysql"):
+            db_name = parsed.path.lstrip("/")
+            return pymysql.connect(
+                host=parsed.hostname,
+                port=parsed.port or 3306,
+                user=parsed.username,
+                password=parsed.password,
+                database=db_name,
+                charset="utf8mb4",
+                connect_timeout=10,
+                cursorclass=pymysql.cursors.DictCursor
+            )
+
     return pymysql.connect(
-        host=os.getenv('MYSQLHOST'),
-        user=os.getenv('MYSQUSER'),
-        password=os.getenv('MYSQLPASSWORD'),
-        database=os.getenv('MYSQLDATABASE'),
-        port=int(os.getenv('MYSQLPORT', 3306)),
-        charset='utf8mb4',
+        host=os.getenv("DB_HOST", "127.0.0.1"),
+        port=int(os.getenv("DB_PORT", "3306")),
+        user=os.getenv("DB_USER", "root"),
+        password=os.getenv("DB_PASSWORD", ""),
+        database=os.getenv("DB_NAME", "tradingplat"),
+        charset="utf8mb4",
+        connect_timeout=10,
         cursorclass=pymysql.cursors.DictCursor
     )
 
@@ -610,4 +635,4 @@ def views_hub():
 
 # ------------------- 运行 -------------------
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=int(os.getenv('PORT', 5000)))
+    app.run(host="0.0.0.0", port=int(os.getenv("PORT", "8080")))

@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card nav">
+    <h3>功能模块</h3>
+    <a href="/?module=list">列表</a>
+    <a href="/?module=ops">数据操作</a>
+    <a href="/?module=query">综合查询</a>
+    <a href="/?module=stats">统计分组</a>
+    <a href="/?module=views">视图</a>
+</div>
+
+{% if active_module == 'list' %}
+<div class="card">
+    <h3>列表模块</h3>
+    <p class="muted">请选择要查看的数据列表。</p>
+    <div class="nav">
+        <a href="/users">用户列表</a>
+        <a href="/items">商品列表</a>
+        <a href="/orders">订单列表</a>
+    </div>
+</div>
+{% elif active_module == 'ops' %}
+<div class="row" id="ops">
+    <div class="col">
+        <div class="card">
+            <h3>新增商品</h3>
+            <form class="inline" method="post" action="/do/add_item">
+                <input name="item_id" placeholder="商品ID (如 i007)" required>
+                <input name="item_name" placeholder="商品名" required>
+                <input name="category" placeholder="分类 (如 Digital)" required>
+                <input name="price" type="number" step="0.01" min="0" placeholder="价格" required>
+                <select name="seller_id" required>
+                    <option value="">选择卖家</option>
+                    {% for uid in users %}
+                    <option value="{{ uid }}">{{ uid }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit">提交新增</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="col">
+        <div class="card">
+            <h3>修改价格</h3>
+            <form class="inline" method="post" action="/do/update_price">
+                <input name="item_id" placeholder="商品ID" required>
+                <input name="price" type="number" step="0.01" min="0" placeholder="新价格" required>
+                <button type="submit">提交改价</button>
+            </form>
+
+            <h3>删除未售商品</h3>
+            <form class="inline" method="post" action="/do/delete_unsold">
+                <input name="item_id" placeholder="商品ID" required>
+                <button type="submit">删除</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <h3>购买商品</h3>
+    <form class="inline" method="post" action="/buy">
+        <select name="item_id" required>
+            <option value="">选择商品</option>
+            {% for item in items %}
+            <option value="{{ item.item_id }}">
+                {{ item.item_id }} - {{ item.item_name }} 
+            </option>
+            {% endfor %}
+        </select>
+        <select name="buyer_id" required>
+            <option value="">选择买家</option>
+            {% for uid in users %}
+            <option value="{{ uid }}">{{ uid }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit">确认购买</button>
+    </form>
+</div>
+{% elif active_module == 'query' %}
+<div class="card">
+    <h3>综合查询模块</h3>
+    <form method="get" class="inline">
+        <input type="hidden" name="module" value="query">
+        <select name="query_type">
+            <option value="">--请选择查询类型--</option>
+            <option value="unsold" {% if query_data.query_type=='unsold' %}selected{% endif %}>未售出商品</option>
+            <option value="sold" {% if query_data.query_type=='sold' %}selected{% endif %}>所有已售（可看订单详情）</option>
+            <option value="price_gt30" {% if query_data.query_type=='price_gt30' %}selected{% endif %}>价格 > 30</option>
+            <option value="category_daily" {% if query_data.query_type=='category_daily' %}selected{% endif %}>按类型：生活用品</option>
+            <option value="user" {% if query_data.query_type=='user' %}selected{% endif %}>按用户（全部/已售/未售）</option>
+        </select>
+        {% if query_data.query_type == 'user' %}
+        <select name="user_id">
+            <option value="">--选择用户--</option>
+            {% for uid in users %}
+            <option value="{{uid}}" {% if query_data.selected_user==uid %}selected{% endif %}>{{uid}}</option>
+            {% endfor %}
+        </select>
+        <select name="user_scope">
+            <option value="all" {% if query_data.user_scope=='all' %}selected{% endif %}>全部</option>
+            <option value="sold" {% if query_data.user_scope=='sold' %}selected{% endif %}>已售</option>
+            <option value="unsold" {% if query_data.user_scope=='unsold' %}selected{% endif %}>未售</option>
+        </select>
+        {% endif %}
+        <button type="submit">查询</button>
+    </form>
+
+    {% if query_data.title %}
+    <h3>{{ query_data.title }}</h3>
+    {% if query_data.query_type == 'sold' %}
+    <table>
+        <tr><th>商品ID</th><th>商品名</th><th>买家</th><th>购买日期</th><th>详情</th></tr>
+        {% for i in query_data['items'] %}
+        <tr>
+            <td>{{i.item_id}}</td>
+            <td>{{i.item_name}}</td>
+            <td>{{i.user_name}}</td>
+            <td>{{i.order_date}}</td>
+            <td><a href="/join/order_detail/{{i.item_id}}">查看详情</a></td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    <table>
+        <tr><th>商品ID</th><th>名称</th><th>分类</th><th>价格</th><th>状态</th><th>卖家ID</th></tr>
+        {% for i in query_data['items'] %}
+        <tr>
+            <td>{{i.item_id}}</td>
+            <td>{{i.item_name}}</td>
+            <td>{{i.category}}</td>
+            <td>{{i.price}}</td>
+            <td class="{{ 'status-sold' if i.status|int == 1 else 'status-unsold' }}">{{ '已售' if i.status|int == 1 else '未售' }}</td>
+            <td>{{i.seller_id}}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+    {% if query_data['items']|length == 0 %}
+    <p class="muted">当前条件下没有查询到数据。</p>
+    {% endif %}
+    {% endif %}
+</div>
+{% elif active_module == 'stats' %}
+<div class="card">
+    <h3>统计分组模块</h3>
+    <p><strong>商品总数：</strong>{{ stats_data.total }}</p>
+    <p><strong>平均价格：</strong>{{ '%.2f'|format(stats_data.avg_price or 0) }}</p>
+    <p><strong>发布商品最多用户：</strong>{{ stats_data.top_user.seller_id if stats_data.top_user else '-' }}（{{ stats_data.top_user.count if stats_data.top_user else 0 }} 件）</p>
+    <h4>每类商品数量</h4>
+    <table>
+        <tr><th>分类</th><th>数量</th></tr>
+        {% for row in stats_data.by_category %}
+        <tr><td>{{ row.category }}</td><td>{{ row.count }}</td></tr>
+        {% endfor %}
+    </table>
+</div>
+{% elif active_module == 'views' %}
+<div class="card">
+    <h3>视图模块</h3>
+    <p class="muted">本模块打开时已自动创建/刷新视图。</p>
+    <h4>已售商品视图（商品名 + 买家ID）</h4>
+    <table>
+        <tr><th>商品名</th><th>买家ID</th></tr>
+        {% for row in view_data.sold_data %}
+        <tr><td>{{ row.item_name }}</td><td>{{ row.buyer_id }}</td></tr>
+        {% endfor %}
+    </table>
+
+    <h4>未售商品视图</h4>
+    <table>
+        <tr><th>商品ID</th><th>名称</th><th>分类</th><th>价格</th><th>卖家ID</th></tr>
+        {% for row in view_data.unsold_data %}
+        <tr>
+            <td>{{ row.item_id }}</td>
+            <td>{{ row.item_name }}</td>
+            <td>{{ row.category }}</td>
+            <td>{{ row.price }}</td>
+            <td>{{ row.seller_id }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endif %}
+{% endblock %}

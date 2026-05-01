@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+    <h2>视图：未售商品</h2>
+    <table>
+        <tr>
+            <th>商品ID</th><th>名称</th><th>分类</th><th>价格</th><th>状态</th><th>卖家ID</th>
+        </tr>
+        {% for i in data %}
+        <tr>
+            <td>{{ i.item_id }}</td>
+            <td>{{ i.item_name }}</td>
+            <td>{{ i.category }}</td>
+            <td>{{ i.price }}</td>
+            <td class="status-unsold">未售</td>
+            <td>{{ i.seller_id }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    <p><a href="/">返回首页</a></p>
+</div>
+{% endblock %}

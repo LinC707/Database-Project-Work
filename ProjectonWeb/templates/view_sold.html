@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+    <h2>视图：已售商品（商品名 + 买家ID）</h2>
+    <table>
+        <tr><th>商品名</th><th>买家ID</th></tr>
+        {% for row in data %}
+        <tr><td>{{ row.item_name }}</td><td>{{ row.buyer_id }}</td></tr>
+        {% endfor %}
+    </table>
+    <p><a href="/">返回首页</a></p>
+</div>
+{% endblock %}

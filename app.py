@@ -8,11 +8,11 @@ app.secret_key = "trading-platform-demo-secret"
 # 数据库连接
 def get_db():
     return pymysql.connect(
-        host=os.getenv('MYSQL_HOST'),
-        user=os.getenv('MYSQL_USER'),
-        password=os.getenv('MYSQL_PASSWORD'),
-        database=os.getenv('MYSQL_DATABASE'),
-        port=int(os.getenv('MYSQL_PORT', 3306)),
+        host=os.getenv('MYSQLHOST'),
+        user=os.getenv('MYSQUSER'),
+        password=os.getenv('MYSQLPASSWORD'),
+        database=os.getenv('MYSQLDATABASE'),
+        port=int(os.getenv('MYSQLPORT', 3306)),
         charset='utf8mb4',
         cursorclass=pymysql.cursors.DictCursor
     )

@@ -352,7 +352,7 @@ def join_user_sold():
         cursor = db.cursor()
         cursor.execute('''
             SELECT i.item_id, i.item_name, i.status,
-            CASE WHEN i.status=1 THEN '已购买' ELSE '未购买' END AS is_sold
+            CASE WHEN i.status='1' THEN '已购买' ELSE '未购买' END AS is_sold
             FROM item i WHERE i.seller_id=%s
         ''', (selected_user,))
         items = cursor.fetchall()
@@ -450,7 +450,7 @@ def do_add_item():
         price = float(price_raw)
         cursor.execute('''
             INSERT INTO item (item_id,item_name,category,price,status,seller_id)
-            VALUES (%s,%s,%s,%s,0,%s)
+            VALUES (%s,%s,%s,%s,'0',%s)
         ''', (item_id, item_name, category, price, seller_id))
         db.commit()
         flash(f"商品 {item_id} 已新增。", "success")
@@ -496,7 +496,7 @@ def do_delete_unsold():
     db = get_db()
     cursor = db.cursor()
     try:
-        affected = cursor.execute("DELETE FROM item WHERE item_id=%s AND status=0", (item_id,))
+        affected = cursor.execute("DELETE FROM item WHERE item_id=%s AND status='0'", (item_id,))
         db.commit()
         if affected:
             flash(f"商品 {item_id} 已删除（未售状态）。", "success")
